@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script src="jquery.min.js"></script>
+<script>
+    info = {audio: true};
+    const recoder = async (constraint) =>{
+        let stream = null;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia(constraint);
+            let audio = document.querySelector('audio');
+            
+        let start = document.getElementById('record');
+
+		// Stop record
+		let stop = document.getElementById('play');
+
+        let mediaRecorder = new MediaRecorder(stream);
+		// Pass the audio stream
+
+		// Start event
+		start.addEventListener('click', function (ev) {
+		mediaRecorder.start();
+        console.log('started')
+		// console.log(mediaRecorder.state);
+		})
+
+		// Stop event
+		stop.addEventListener('click', function (ev) {
+		mediaRecorder.stop();
+        console.log('stopped');
+        
+		// console.log(mediaRecorder.state);
+		});
+        // Chunk array to store the audio data
+		let dataArray = [];
+		// If audio data available then push
+		// it to the chunk array
+		mediaRecorder.ondataavailable = function (ev) {
+		dataArray.push(ev.data);
+		}
+
+		// Convert the audio data in to blob
+		// after stopping the recording
+		mediaRecorder.onstop = function (ev) {
+        
+		// blob of type mp3
+		let audioData = new Blob(dataArray,
+					{ 'type': 'audio/mp3;' });
+			
+		// After fill up the chunk
+		// array make it empty
+        
+
+		dataArray = [];
+
+		// Creating audio url with reference
+		// of created blob named 'audioData'
+		let audioSrc = window.URL
+			.createObjectURL(audioData);
+
+		// Pass the audio url to the 2nd video tag
+		audio.src = audioSrc;
+
+        let formData = new FormData();
+        formData.append('file', audioSrc)
+        var data = {
+        'api_token': '4e67559d640f055fdc9add5c7b68988b',
+        'file': formData,
+        'return': 'apple_music,spotify',
+        };
+        $.ajax({
+            url:"https://api.audd.io/",
+            type: 'POST', 
+            data: data,
+            processData: false,
+            contentType: 'multipart/form-data', 
+            success: function(response){
+            // var result = jQuery.parseJSON(response);
+            let a = response
+            console.log(a);
+        }});
+		}
+        
+        } catch (err) {
+            console.log(err.name, err.message);
+        }
+
+    }
+        
+
+</script>
+<body>
+    <button id="record">Record</button>
+    <button id="play">Stop</button>
+    <audio id="audio" controls></audio>
+</body>
+<script>
+    recoder(info);
+    
+</script>
+
+</html>
